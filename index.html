@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi UTS OSBIO 2026</title>
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #333; }
+        .container { background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; max-width: 850px; padding: 40px; box-sizing: border-box; }
+        .header-title { text-align: center; color: #0d6efd; font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+        .header-subtitle { text-align: center; color: #6c757d; font-size: 14px; margin-bottom: 30px; }
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .btn-outline { background-color: transparent; border: 1px solid #0d6efd; color: #0d6efd; padding: 15px; border-radius: 6px; cursor: pointer; font-size: 13px; text-align: left; font-weight: 500; transition: 0.2s; height: 100%; display: flex; align-items: center; }
+        .btn-outline:hover { background-color: #f0f7ff; }
+        .btn-solid { background-color: #0d6efd; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; text-align: center; transition: 0.2s; }
+        .btn-solid:hover { background-color: #0b5ed7; }
+        .btn-prev { background-color: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-red { background-color: #dc3545 !important; width: auto !important; padding: 12px 24px; }
+        .quiz-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+        .category-title { color: #0d6efd; font-size: 18px; font-weight: bold; margin: 0; max-width: 70%; }
+        .question-counter { color: #6c757d; font-size: 14px; font-weight: 500; }
+        .progress-bar-container { width: 100%; background-color: #e9ecef; height: 6px; border-radius: 3px; margin-bottom: 25px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: #0d6efd; width: 0%; transition: width 0.3s ease; }
+        .question-box { background-color: #f0f7ff; border: 1px solid #cce3fd; border-radius: 8px; padding: 25px; font-size: 17px; margin-bottom: 20px; text-align: left; font-weight: 500; line-height: 1.6;}
+        .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .option-item { display: flex; align-items: flex-start; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 6px; cursor: pointer; transition: 0.2s; line-height: 1.4; }
+        .option-item:hover { background-color: #f8f9fa; }
+        .option-item input { margin-right: 15px; margin-top: 3px; transform: scale(1.2); flex-shrink: 0; pointer-events: none; }
+        .option-item.selected { border-color: #0d6efd; background-color: #f0f7ff; font-weight: 600; }
+        .essay-area { width: 100%; height: 150px; padding: 15px; border-radius: 8px; border: 1px solid #ced4da; font-family: inherit; font-size: 16px; box-sizing: border-box; margin-bottom: 20px; resize: vertical; }
+        .quiz-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 10px; }
+        .review-card { border: 1px solid #cce3fd; border-radius: 8px; padding: 20px; margin-bottom: 15px; background-color: #f8fbfd; text-align: left;}
+        .wrong-pg { border-color: #f8d7da; background-color: #fff5f5; }
+        .ans-user { padding: 10px; border-radius: 4px; font-size: 14px; margin-top: 5px; background: white; border: 1px solid #eee; }
+        .ans-ref { background-color: #e8f4fd; padding: 10px; border-radius: 4px; font-size: 14px; color: #084298; margin-top: 5px; }
+        .review-badge { background-color: #e9ecef; color: #495057; font-size: 11px; padding: 3px 8px; border-radius: 4px; float: right; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="home-screen">
+    <div class="header-title">SIMULASI UTS OSBIO 2026</div>
+    <div class="header-subtitle">OS2105 Oseanografi Biologi</div>
+    <div class="grid-menu" id="menu-container"></div>
+    <button class="btn-solid" style="width: 100%; margin-top: 10px;" onclick="startQuiz('Semua Topik')">Mulai Semua Topik</button>
+</div>
+
+<div class="container" id="quiz-screen" style="display: none;">
+    <div class="quiz-header">
+        <h2 class="category-title" id="current-category-text">Kategori</h2>
+        <div class="question-counter" id="question-counter">Soal 1 / 10</div>
+    </div>
+    <div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="question-box" id="question-text">...</div>
+    <div id="answer-container"></div>
+    <div class="quiz-footer">
+        <button class="btn-prev" id="btn-prev" onclick="prevQuestion()">Sebelumnya</button>
+        <button class="btn-solid btn-red" id="btn-finish-anytime" onclick="showResults()">Akhiri & Lihat Hasil</button>
+        <button class="btn-solid" id="btn-next" style="width: auto; padding: 12px 24px;" onclick="nextQuestion()">Selanjutnya</button>
+    </div>
+</div>
+
+<div class="container" id="result-screen" style="display: none;">
+    <div class="header-title" style="font-size: 24px;">Hasil Simulasi UTS</div>
+    <div class="score-card" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;"><span>Topik:</span><span id="score-category-name" style="font-weight:bold;">...</span></div>
+        <div style="display:flex; justify-content: space-between; font-weight: bold; color: #198754; font-size: 22px;"><span>Skor Benar (PG & BS):</span><span id="score-text-total">0/0</span></div>
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">*Jawaban Essay diperiksa mandiri menggunakan referensi kunci jawaban yang tersedia di bawah.</p>
+    </div>
+    <div id="review-container"></div>
+    <button class="btn-solid" onclick="location.reload()" style="width: 100%; margin-top: 20px;">Kembali ke Menu Utama</button>
+</div>
+
+<script>
+const databaseSoal = [
+    // --- KATEGORI 1: Pengantar dan Konsep Dasar Oseanografi Biologi ---
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Apakah definisi yang paling tepat mengenai Oseanografi Biologi?", pilihan: ["Cabang ilmu yang hanya mempelajari taksonomi dan klasifikasi ikan di laut.", "Cabang oseanografi yang mempelajari organisme laut, proses kehidupannya, distribusi, serta interaksinya dengan lingkungan fisik dan kimia laut.", "Ilmu yang secara khusus mempelajari struktur geologi dasar samudra dan palung laut.", "Studi mengenai dinamika pergerakan massa air dan sistem arus global."], kunci_jawaban: "Cabang oseanografi yang mempelajari organisme laut, proses kehidupannya, distribusi, serta interaksinya dengan lingkungan fisik dan kimia laut." },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Zona di dalam kolom air laut yang masih menerima cukup cahaya matahari untuk mendukung proses fotosintesis disebut sebagai...", pilihan: ["Zona Abyssal", "Zona Twilight", "Zona Euphotic (Fotik)", "Zona Afotik"], kunci_jawaban: "Zona Euphotic (Fotik)" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Berapakah perkiraan persentase organisme hidup di bumi yang ditemukan di ekosistem akuatik?", pilihan: ["Kurang dari 20%", "Sekitar 50%", "Lebih dari 80%", "Tepat 100%"], kunci_jawaban: "Lebih dari 80%" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Dalam tingkat organisasi kehidupan biologi, urutan hierarki yang paling tepat dari tingkat molekul hingga ekosistem adalah...", pilihan: ["Molekul -> Sel -> Organisme -> Populasi -> Komunitas -> Ekosistem -> Biosfer", "Populasi -> Komunitas -> Ekosistem -> Sel -> Jaringan -> Organ", "Individu -> Sel -> Jaringan -> Organ -> Ekosistem", "Ekosistem -> Komunitas -> Populasi -> Individu -> Organ -> Sel"], kunci_jawaban: "Molekul -> Sel -> Organisme -> Populasi -> Komunitas -> Ekosistem -> Biosfer" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Faktor apa saja yang dikategorikan sebagai faktor fisika yang memengaruhi kehidupan organisme di laut?", pilihan: ["Oksigen, nutrien, pH, dan CO2", "Cahaya, suhu, tekanan, salinitas, arus, gelombang, dan kedalaman", "Bakteri pendegradasi dan mikroorganisme", "Senyawa organik terlarut dan alkalinitas"], kunci_jawaban: "Cahaya, suhu, tekanan, salinitas, arus, gelombang, dan kedalaman" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Manakah kelompok faktor kimia yang memengaruhi kehidupan organisme laut?", pilihan: ["Cahaya, arus, dan gelombang", "Oksigen, nutrien, pH, CO2, alkalinitas, dan senyawa organik", "Suhu, kedalaman, dan tekanan hidrostatis", "Salinitas dan densitas massa air"], kunci_jawaban: "Oksigen, nutrien, pH, CO2, alkalinitas, dan senyawa organik" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Mengapa Oseanografi Biologi ditekankan bukan sekadar menghafal nama organisme atau klasifikasi ikan semata?", pilihan: ["Karena nama taksonomi organisme laut sering berubah-ubah setiap tahun", "Karena yang terpenting adalah memahami proses, interaksi ekologis, cara memperoleh energi, serta adaptasi organisme terhadap lingkungan", "Because data organisme laut tidak memerlukan pendekatan biologi sama sekali", "Karena studi oseanografi hanya berfokus pada pemodelan numerik fisika"], kunci_jawaban: "Karena yang terpenting adalah memahami proses, interaksi ekologis, cara memperoleh energi, serta adaptasi organisme terhadap lingkungan" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Apa contoh urutan tingkat organisasi dari molekul hingga ekosistem laut yang benar?", pilihan: ["Klorofil -> sel fitoplankton -> populasi/komunitas plankton -> jaring makanan ekosistem laut", "Ekosistem -> komunitas -> populasi -> sel -> molekul", "Individu -> jaringan -> sel -> organ -> bioma", "Biosfer -> ekosistem -> molekul -> sel"], kunci_jawaban: "Klorofil -> sel fitoplankton -> populasi/komunitas plankton -> jaring makanan ekosistem laut" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Samudra sebagai ekosistem terbesar di planet bumi dapat dibagi menjadi beberapa zona utama, di antaranya adalah...", pilihan: ["Photic, pelagic, benthic, epipelagic, dan aphotic zones", "Zona troposfer, stratosfer, dan mesosfer", "Zona intrusi, estuari, dan limnetik", "Zona litoral daratan tinggi saja"], kunci_jawaban: "Photic, pelagic, benthic, epipelagic, dan aphotic zones" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "pg", pertanyaan: "Ilmu Oseanografi Biologi bersifat multidisiplin karena beririsan erat dengan berbagai bidang ilmu lain, kecuali...", pilihan: ["Physical dan Chemical Oceanography", "Climate Science and Remote Sensing", "Molecular Biology and Data Science", "Astrologi dan Perbintangan Kuno"], kunci_jawaban: "Astrologi dan Perbintangan Kuno" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "bs", pertanyaan: "Samudra dikategorikan sebagai ekosistem terbesar di planet bumi dan dapat dibagi menjadi beberapa zona seperti photic, pelagic, benthic, epipelagic, dan aphotic.", kunci_jawaban: "Benar" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "bs", pertanyaan: "Ilmu Oseanografi Biologi dalam perkembangannya berdiri sendiri tanpa beririsan dengan disiplin ilmu modern seperti data science, climate science, ataupun remote sensing.", kunci_jawaban: "Salah" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "bs", pertanyaan: "Dalam tingkat hierarki organisasi kehidupan biologi, urutan yang dicontohkan dimulai dari tingkat molekul (seperti klorofil) menuju sel fitoplankton hingga membentuk jaring makanan di ekosistem laut.", kunci_jawaban: "Benar" },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "essay", pertanyaan: "Jelaskan mengapa Oseanografi Biologi ditekankan bukan sekadar menghafal nama atau taksonomi organisme, melainkan berfokus pada pemahaman proses dan hubungan ekologis!", kunci_jawaban: "Karena fokus utama oseanografi biologi adalah memahami alasan mengapa organisme hidup di lokasi tertentu, bagaimana mereka memperoleh energi, bagaimana mereka beradaptasi serta berinteraksi dengan lingkungan, dan bagaimana perubahan lingkungan memengaruhi kehidupan laut secara menyeluruh." },
+    { kategori: "Pengantar dan Konsep Dasar Oseanografi Biologi", tipe: "essay", pertanyaan: "Uraikan perbedaan antara faktor fisika dan faktor kimia utama yang memengaruhi kehidupan organisme di dalam ekosistem laut!", kunci_jawaban: "Faktor fisika meliputi parameter dinamik dan lingkungan seperti cahaya, suhu, tekanan, salinitas, arus, gelombang, dan kedalaman. Sedangkan faktor kimia mencakup kandungan oksigen terlarut, nutrien, pH, karbon dioksida (CO2), alkalinitas, serta senyawa organik yang ada di dalam air laut." },
+
+    // --- KATEGORI 2: Sel dan Makromolekul ---
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Berapakah batas minimum berat molekul organik agar dapat dikategorikan sebagai makromolekul?", pilihan: ["Lebih dari 10.000 daltons", "Lebih dari 100.000 daltons", "Lebih dari 500.000 daltons", "Lebih dari 1.000.000 daltons"], kunci_jawaban: "Lebih dari 100.000 daltons" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Organik makromolekul penyusun sel yang sering dijuluki sebagai 'workhorses of life' (pekerja utama kehidupan) adalah...", pilihan: ["Lipid", "Karbohidrat", "Proteins", "Asam nukleat"], kunci_jawaban: "Proteins" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Ikatan kimia apakah yang terbentuk antara dua molekul asam amino melalui pelepasan molekul air (H2O) saat pembentukan rantai polipeptida?", pilihan: ["Ikatan glikosidik", "Ikatan ester", "Ikatan peptida", "Ikatan hidrogen"], kunci_jawaban: "Ikatan peptida" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Manakah kelompok asam amino di bawah ini yang tergolong ke dalam asam amino esensial bagi organisme?", pilihan: ["Alanin, asparagin, dan serin", "Leusin, isoleusin, dan valin", "Asam aspartat dan asam glutamat", "Glisin dan glutamin"], kunci_jawaban: "Leusin, isoleusin, dan valin" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Struktur sekunder protein dapat dikonfigurasikan ke dalam beberapa bentuk utama, yaitu...", pilihan: ["Alpha-helix, beta-pleated sheet, dan random coil", "Primary sequence dan quaternary structure", "Myoglobin dan hemoglobin", "Globular dan fibrous tunggal"], kunci_jawaban: "Alpha-helix, beta-pleated sheet, dan random coil" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Komponen utama penyusun molekul lemak (fats) terdiri dari gabungan dua jenis monomer, yaitu...", pilihan: ["Gliserol dan 3 molekul asam lemak", "Gliserol, 2 molekul asam lemak, dan gugus fosfat", "Empat cincin karbon tanpa ekor asam lemak", "Monosakarida berantai panjang"], kunci_jawaban: "Gliserol dan 3 molekul asam lemak" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Apa perbedaan utama antara struktur lemak jenuh (saturated fat) dan lemak tak jenuh (unsaturated fat)?", pilihan: ["Lemak jenuh memiliki ikatan rangkap dua karbon, sedangkan lemak tak jenuh ikatan tunggal.", "Lemak jenuh memiliki ikatan tunggal C-C pada ekor asam lemaknya, sedangkan lemak tak jenuh memiliki satu atau lebih ikatan rangkap.", "Lemak jenuh berwujud cair pada suhu ruang, sedangkan lemak tak jenuh berwujud padat.", "Lemak jenuh sebagian besar berasal dari tumbuhan, sedangkan lemak tak jenuh dari hewan."], kunci_jawaban: "Lemak jenuh memiliki ikatan tunggal C-C pada ekor asam lemaknya, sedangkan lemak tak jenuh memiliki satu atau lebih ikatan rangkap." },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Molekul lipid yang berfungsi sebagai komponen utama penyusun membran sel dengan membentuk struktur bilayer adalah...", pilihan: ["Trigliserida", "Steroid", "Fosfolipid", "Kolesterol bebas"], kunci_jawaban: "Fosfolipid" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Steroid memiliki karakteristik struktur yang khas, yaitu...", pilihan: ["Terdiri dari empat cincin karbon tanpa ekor asam lemak", "Memiliki rantai gliserol bercabang tiga", "Tersusun atas polimer monosakarida siklik", "Mengandung gugus amino dan gugus karboksil berseling"], kunci_jawaban: "Terdiri dari empat cincin karbon tanpa ekor asam lemak" },
+    { kategori: "Sel dan Makromolekul", tipe: "pg", pertanyaan: "Berdasarkan regulasi ion dan air pada ikan air asin (saltwater fish), mekanisme apa yang terjadi pada insang ikan tersebut?", pilihan: ["Pengambilan aktif ion Na+ dan Cl- secara terus-menerus melalui epitel insang", "Ekskresi aktif ion Na+ dan Cl- melintasi epitel insang ke lingkungan laut", "Air masuk ke dalam kapiler insang secara osmosis karena salinitas rendah", "Ikan memproduksi urine encer dalam jumlah sangat banyak"], kunci_jawaban: "Ekskresi aktif ion Na+ dan Cl- melintasi epitel insang ke lingkungan laut" },
+    { kategori: "Sel dan Makromolekul", tipe: "bs", pertanyaan: "Sel tumbuhan dan sel hewan sama-sama merupakan sel eukariotik sehingga keduanya memiliki organel bermembran seperti nukleus dan mitokondria.", kunci_jawaban: "Benar" },
+    { kategori: "Sel dan Makromolekul", tipe: "bs", pertanyaan: "Mamalia (termasuk hewan laut tertentu) memproduksi enzim spesifik di dalam tubuhnya yang mampu memecah ikatan kimia pada selulosa sehingga serat tumbuhan dapat dicerna dengan sempurna.", kunci_jawaban: "Salah" },
+    { kategori: "Sel dan Makromolekul", tipe: "bs", pertanyaan: "Enzim sebagai protein fungsional memiliki sisi aktif (active site) yang spesifik dan dapat digunakan berulang kali karena enzim tersebut didaur ulang setelah reaksi katalisis.", kunci_jawaban: "Benar" },
+    { kategori: "Sel dan Makromolekul", tipe: "essay", pertanyaan: "Jelaskan bagaimana perbedaan mekanisme osmoregulasi antara ikan air tawar (freshwater fish) dan ikan laut (saltwater fish) dalam mempertahankan konsentrasi cairan tubuhnya yang bernilai sekitar 300 mOsm/L!", kunci_jawaban: "Ikan air tawar hidup di lingkungan hipotonik (0-50 mOsm/L) sehingga air masuk secara osmosis melalui insang dan ikan tidak minum; mereka mengatasi kelebihan air dengan mengekskresikan urine encer dalam jumlah banyak serta melakukan uptake aktif ion Na+ dan Cl- melalui insang. Sebaliknya, ikan laut hidup di lingkungan hipertonik (1,000 mOsm/L) sehingga air keluar dari tubuh secara osmosis dan ikan harus minum air laut; mereka mengeluarkan kelebihan garam dengan mengekskresikan ion secara aktif melalui insang serta memproduksi sedikit urine pekat." },
+    { kategori: "Sel dan Makromolekul", tipe: "essay", pertanyaan: "Uraikan peran utama empat makromolekul penyusun kehidupan (protein, karbohidrat, lipid, dan asam nukleat) di dalam sel organisme perairan!", kunci_jawaban: "Protein berperan sebagai pembangun struktur sel, otot, dan enzim katalis metabolisme; karbohidrat berfungsi sebagai sumber energi utama dan dukungan struktural (seperti selulosa pada dinding sel alga); lipid berfungsi sebagai penyimpan cadangan energi tinggi, komponen membran sel (fosfolipid), pelindung dari dehidrasi, serta isolator suhu; sedangkan asam nukleat (DNA/RNA) berperan sebagai faktor pewarisan sifat herediter dan pengontrol sintesis protein penentu fungsi sel." },
+
+    // --- TOPIK 3: NUTRISI DAN TRANSPOR ---
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Enam kelas utama nutrisi yang dibutuhkan oleh tubuh makhluk hidup meliputi...", pilihan: ["Karbohidrat, lemak, protein, vitamin, mineral, dan air", "Glukosa, asam amino, asam lemak, enzim, hormon, dan serat", "Makronutrien, mikronutrien, lipid, asam nukleat, vitamin, dan kalsium", "Pati, glikogen, kolesterol, selulosa, ion natrium, dan air"], kunci_jawaban: "Karbohidrat, lemak, protein, vitamin, mineral, dan air" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Jenis kolesterol yang sering disebut sebagai 'kolesterol jahat' karena bertugas mentransportasikan kolesterol dari hati ke sel-sel tubuh adalah...", pilihan: ["HDL (High-Density Lipoprotein)", "LDL (Low-Density Lipoprotein)", "Trigliserida bebas", "Chylomicron"], kunci_jawaban: "LDL (Low-Density Lipoprotein)" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Berapakah rasio unsur hara utama (Rasio Redfield) antara Karbon, Nitrogen, dan Fosfor di dalam ekosistem laut?", pilihan: ["C : N : P = 10 : 1 : 1", "C : N : P = 50 : 10 : 1", "C : N : P = 106 : 16 : 1", "C : N : P = 1000 : 100 : 1"], kunci_jawaban: "C : N : P = 106 : 16 : 1" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Senyawa silikat terlarut di perairan laut (terutama dalam bentuk asam silikat / Si(OH)4) sangat dibutuhkan secara spesifik oleh kelompok fitoplankton jenis apa untuk membangun dinding sel (frustule)?", pilihan: ["Diatom", "Dinoflagellata", "Cyanobacteria", "Green algae uniseluler"], kunci_jawaban: "Diatom" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Bagaimanakah mekanisme adaptasi osmoregulasi pada ikan air laut (marine teleost) untuk mengatasi lingkungan yang hiperosmotik?", pilihan: ["Tidak pernah minum air dan menghasilkan banyak urin encer", "Meminum air laut secara aktif, mengekskresikan ion Na+ dan Cl- lewat insang, serta memproduksi sedikit urin pekat", "Menyerap ion garam secara aktif melalui kulit dan insang tanpa minum air", "Memasukkan air secara osmosis melalui seluruh permukaan tubuh"], kunci_jawaban: "Meminum air laut secara aktif, mengekskresikan ion Na+ dan Cl- lewat insang, serta memproduksi sedikit urin pekat" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Di dalam siklus nitrogen di lautan, proses biologis pengubahan gas nitrogen ($N_2$) menjadi nitrat disebut sebagai...", pilihan: ["Nitrification", "Denitrification", "Nitrogen Fixation", "Ammonification"], kunci_jawaban: "Nitrogen Fixation" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Manakah komponen bentuk inorganik fosfat terlarut yang paling dominan ditemukan di air laut pada pH sekitar 8 dan suhu 20°C?", pilihan: ["HPO4 2-", "PO4 3-", "H2PO4 -", "Polyphosphate"], kunci_jawaban: "HPO4 2-" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Bagian dari organ pencernaan ikan yang berfungsi sebagai kantung buntu pencernaan di antara lambung dan usus adalah...", pilihan: ["Pyloric caeca", "Rectum", "Empedu (gallbladder)", "Anus"], kunci_jawaban: "Pyloric caeca" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Kondisi kelebihan berat badan di mana seseorang memiliki Indeks Massa Tubuh (BMI) bernilai...", pilihan: ["Lebih besar atau sama dengan 25", "Lebih besar atau sama dengan 30", "Lebih besar atau sama dengan 35", "Lebih besar atau sama dengan 40"], kunci_jawaban: "Lebih besar atau sama dengan 30" },
+    { kategori: "Nutrisi dan Transpor", tipe: "pg", pertanyaan: "Zat besi ($Fe$) dan mangan ($Mn$) di dalam perairan laut bagi fitoplankton umumnya berperan sebagai...", pilihan: ["Makronutrien utama pembentuk kerangka", "Mikronutrien yang bertindak sebagai kofaktor vitamin/enzim", "Sumber energi cadangan utama saat gelap", "Bahan utama pembentuk dinding sel"], kunci_jawaban: "Mikronutrien yang bertindak sebagai kofaktor vitamin/enzim"},
+    { kategori: "Nutrisi dan Transpor", tipe: "bs", pertanyaan: "Serat larut dalam makanan memiliki kemampuan untuk bergabung dengan asam empedu dan kolesterol guna mencegah penyerapannya di dalam saluran pencernaan.", kunci_jawaban: "Benar" },
+    { kategori: "Nutrisi dan Transpor", tipe: "bs", pertanyaan: "Ikan air tawar secara aktif meminum air dari lingkungan sekitarnya untuk menggantikan cairan tubuh yang hilang secara osmosis.", kunci_jawaban: "Salah" },
+    { kategori: "Nutrisi dan Transpor", tipe: "essay", pertanyaan: "Jelaskan perbedaan mendasar antara tantangan osmoregulasi serta mekanisme penyesuaian organ tubuh (seperti minum, fungsi insang, dan produksi urin) antara ikan teleostei air laut dan ikan teleostei air tawar!", kunci_jawaban: "Ikan air laut hidup di lingkungan hiperosmotik sehingga menghadapi masalah kehilangan air dan kelebihan ion; adaptasinya adalah meminum air laut, mengekskresikan ion Na+ dan Cl- secara aktif melalui sel klorida di insang, serta menghasilkan sedikit urin pekat. Sebaliknya, ikan air tawar hidup di lingkungan hipotonik sehingga menghadapi masalah kemasukan air dan kehilangan garam; adaptasinya adalah tidak minum air, menyerap ion Na+ dan Cl- secara aktif melalui insang, serta memproduksi urin encer dalam jumlah banyak." },
+    { kategori: "Nutrisi dan Transpor", tipe: "essay", pertanyaan: "Uraikan tiga bentuk utama unsur nitrogen inorganik terlarut yang paling dominan di dalam ekosistem perairan laut!", kunci_jawaban: "Tiga bentuk utama nitrogen inorganik terlarut di laut meliputi ion nitrat (NO3-), ion nitrit (NO2-), serta ion amonia dan amoniak (NH3+ + NH4+)." },
+    { kategori: "Nutrisi dan Transpor", tipe: "essay", pertanyaan: "Sebutkan dan jelaskan dua sumber utama perolehan nutrisi pada terumbu karang (coral) di lingkungan laut!", kunci_jawaban: "Terumbu karang memperoleh nutrisi secara heterotrofik dengan cara menangkap plankton menggunakan tentakel lalu mencernanya dalam rongga gastrovaskular, serta secara autotrofik dari hasil fotosintesis alga simbiotik zooxanthellae (seperti glukosa dan gliserol) yang hidup di jaringan mereka." },
+
+    // --- TOPIK 4: SISTEM RESPIRASI ---
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Organisasi pernapasan pada serangga (seperti jangkrik) menggunakan sistem jaringan tabung yang menyalurkan oksigen langsung ke sel-sel tubuh, yang dinamakan...", pilihan: ["Sistem alveoli paru-paru", "Sistem insang lembaran (lamellae)", "Sistem trakea dan trakeolus dengan lubang spirakel", "Sistem rongga gastrovaskular terbuka"], kunci_jawaban: "Sistem trakea dan trakeolus dengan lubang spirakel" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Keunggulan sistem pertukaran gas pada insang ikan dalam mengambil oksigen dari air didukung oleh mekanisme aliran darah dan air yang disebut...", pilihan: ["Countercurrent exchange (sistem arus berlawanan)", "Concurrent flow (sistem arus searah)", "Tidal ventilation (ventilasi pasang surut)", "Diffusion pump ganda"], kunci_jawaban: "Countercurrent exchange (sistem arus berlawanan)" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Akar napas khusus yang tumbuh secara vertikal ke atas pada tumbuhan mangrove seperti *Sonneratia alba* atau *Avicennia sp.* di daerah pasang surut disebut...", pilihan: ["Akar gantung (aerial root)", "Pneumatofor (pneumatophores)", "Lentisel sekunder", "Haustorium akar"], kunci_jawaban: "Pneumatofor (pneumatophores)" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Penyakit paru-paru kronis di mana dinding alveoli mengalami kerusakan (pecah dan berfusi), sehingga menurunkan luas permukaan total untuk pertukaran gas, dikenal sebagai...", pilihan: ["Bronkitis akut", "Emfisema", "Pneumonia", "Tuberkulosis paru"], kunci_jawaban: "Emfisema" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Bakteri apakah yang menjadi agen penyebab utama dari penyakit infeksi paru-paru menular Tuberkulosis (pulmonary tuberculosis)?", pilihan: ["Streptococcus pyogenes", "Rhinovirus", "Mycobacterium tuberculosis", "Influenza virus"], kunci_jawaban: "Mycobacterium tuberculosis" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Pigmen respirasi berwarna biru yang mengandung tembaga (copper-containing) yang digunakan oleh moluska dan artropoda untuk mengangkut oksigen adalah...", pilihan: ["Hemoglobin", "Hemosianin", "Klorofil", "Kromoprotein"], kunci_jawaban: "Hemosianin" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Struktur kecil pada batang tumbuhan berkayu yang berfungsi untuk membantu pertukaran gas dan pengaturan retensi air dinamakan...", pilihan: ["Stomata", "Lentisel", "Kutikula", "Tracheids"], kunci_jawaban: "Lentisel" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Bagian dari sistem konduksi jantung manusia yang bertindak sebagai pemacu jantung alami (pacemaker) pengatur tempo denyut adalah...", pilihan: ["Atrioventricular (AV) node", "Sinoatrial (SA) node", "Aorta", "Ventrikel kiri"], kunci_jawaban: "Sinoatrial (SA) node" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Kelainan genetik resesif yang disebabkan oleh cacat protein pengangkut ion klorida ($Cl-$) sehingga lendir di paru-paru menjadi sangat kental dan mengganggu pernapasan disebut...", pilihan: ["Asma kronis", "Cystic fibrosis (CF)", "Fibrosis paru", "Bronkitis kronis"], kunci_jawaban: "Cystic fibrosis (CF)" },
+    { kategori: "Sistem Respirasi", tipe: "pg", pertanyaan: "Organisme sederhana seperti spons laut (Porifera) melakukan pertukaran gas oksigen dan karbon dioksida melalui cara...", pilihan: ["Sistem sirkulasi tertutup ganda", "Difusi langsung melintasi membran sel", "Pompa paru-paru alveolar", "Sistem trakea terbuka"], kunci_jawaban: "Difusi langsung melintasi membran sel" },
+    { kategori: "Sistem Respirasi", tipe: "bs", pertanyaan: "Organisme uniseluler berukuran besar seperti alga *Ventricaria ventricosa* memerlukan sistem pembuluh darah kompleks dan paru-paru khusus untuk melakukan pertukaran gas.", kunci_jawaban: "Salah" },
+    { kategori: "Sistem Respirasi", tipe: "bs", pertanyaan: "Antibiotik sangat efektif digunakan untuk menyembuhkan penyakit saluran pernapasan yang disebabkan oleh infeksi virus murni seperti *The Common Cold* atau flu biasa.", kunci_jawaban: "Salah" },
+    { kategori: "Sistem Respirasi", tipe: "essay", pertanyaan: "Uraikan bagaimana sistem pertukaran gas bekerja pada hewan akuatik (ikan melalui insang) dan pada serangga (lewat sistem trakea), serta sebutkan struktur utama yang mendukung efisiensi pertukaran gas pada keduanya!", kunci_jawaban: "Pada ikan, pertukaran gas terjadi di dalam insang yang terdiri atas filamen dan lamela dengan bantuan sistem 'countercurrent exchange' (arus berlawanan antara aliran air dan darah kapiler) untuk memaksimalkan difusi oksigen terlarut. Pada serangga, pertukaran gas tidak melibatkan darah secara langsung, melainkan menggunakan sistem trakea di mana udara luar masuk melalui lubang spirakel di sisi tubuh, lalu disalurkan melalui jaringan tabung trakea dan trakeolus yang mengantar oksigen langsung ke sel-sel tubuh." },
+    { kategori: "Sistem Respirasi", tipe: "essay", pertanyaan: "Jelaskan proses pertukaran gas oksigen ($O_2$) dan karbon dioksida ($CO_2$) yang terjadi di dalam struktur alveoli paru-paru manusia!", kunci_jawaban: "Pertukaran gas di alveoli terjadi secara difusi berdasarkan perbedaan tekanan parsial. Oksigen di dalam rongga alveoli memiliki konsentrasi/tekanan parsial yang lebih tinggi dibandingkan dengan darah kapiler yang miskin oksigen, sehingga $O_2$ berdifusi masuk ke dalam darah. Sebaliknya, karbon dioksida di dalam darah kapiler memiliki konsentrasi lebih tinggi daripada di alveoli, sehingga $CO_2$ berdifusi keluar dari darah ke dalam alveoli untuk kemudian dihembuskan keluar tubuh." },
+    { kategori: "Sistem Respirasi", tipe: "essay", pertanyaan: "Sebutkan dan jelaskan tiga jenis penyakit atau gangguan kesehatan utama yang menyerang sistem pernapasan manusia beserta penyebab singkatnya!", kunci_jawaban: "Tiga contoh gangguan pernapasan manusia meliputi: (1) Asma, yaitu penyempitan bronkiolus akibat kejang otot polos karena iritasi; (2) Pneumonia, yaitu infeksi bakteri atau virus di mana alveoli terisi cairan dan nanah; serta (3) Tuberkulosis (TB), yaitu infeksi paru-paru kronis yang disebabkan oleh bakteri *Mycobacterium tuberculosis*." },
+
+    // --- TOPIK: REPRODUKSI DAN GENETIKA ---
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Jenis reproduksi aseksual di mana telur dapat berkembang menjadi hewan dewasa tanpa mengalami fertilisasi oleh sperma (contohnya pada lebah jantan dan beberapa jenis cecak) disebut...", pilihan: ["Ginogenesis", "Partenogenesis", "Pedogenesis", "Strobilasi"], kunci_jawaban: "Partenogenesis" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Bentuk reproduksi seksual di mana telur yang telah dibuahi tetap berada di dalam tubuh induk betina dan berkembang tanpa adanya hubungan nutrisi plasenta (telur menetas di dalam tubuh), contohnya pada ikan guppi, disebut...", pilihan: ["Ovipar", "Vivipar", "Ovovivipar", "Poliembrionik"], kunci_jawaban: "Ovovivipar" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Sumbu utama pengatur siklus reproduksi mamalia yang melibatkan interaksi kelenjar di otak dan organ reproduksi dikenal sebagai...", pilihan: ["Sumbu Hipotalamus-Hipofisa-Gonad (HPG axis)", "Sumbu Tiroidea-Adrenal-Pankreas", "Poros Ovarium-Uterus-Vagina", "Sistem Portal Hepatik"], kunci_jawaban: "Sumbu Hipotalamus-Hipofisa-Gonad (HPG axis)" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Tahapan di dalam siklus sel (Interfase) di mana terjadi proses replikasi DNA disebut sebagai fase...", pilihan: ["Fase G1 (Gap 1)", "Fase S (Synthesis)", "Fase G2 (Gap 2)", "Fase M (Mitosis)"], kunci_jawaban: "Fase S (Synthesis)" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Hukum Mendel yang menyatakan bahwa jika dua alel dari suatu pasangan sifat berbeda, maka alel dominan akan menentukan penampilan fisik organisme tersebut dinamakan...", pilihan: ["Hukum Segregasi Bebas", "Hukum Dominansi", "Hukum Pemilihan Independen", "Hukum Pindah Silang"], kunci_jawaban: "Hukum Dominansi" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Pewarisan sifat di mana heterozigot menampilkan karakteristik perantara (intermediate) di antara kedua kondisi homozigot (seperti bunga merah dan putih menghasilkan merah muda) disebut...", pilihan: ["Kodominansi", "Dominansi tidak sempurna (Incomplete dominance)", "Pleiotropi", "Epistasis"], kunci_jawaban: "Dominansi tidak sempurna (Incomplete dominance)" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Fenomena di mana satu gen tunggal dapat memengaruhi banyak karakteristik fenotipik sekaligus (seperti pada kasus penyakit sickle-cell) dikenal sebagai...", pilihan: ["Poligenik", "Pleiotropi", "Kodominansi", "Aneuploidi"], kunci_jawaban: "Pleiotropi" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Enzim yang sangat penting dan tahan panas yang digunakan dalam teknik reaksi berantai polimerase (PCR) untuk memperbanyak fragmen DNA adalah...", pilihan: ["RNA polymerase", "Taq polymerase", "DNA ligase", "Helikase"], kunci_jawaban: "Taq polymerase" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Metode klasik sequencing DNA yang dikembangkan dengan menggunakan dideoksinukleotida (ddNTPs) untuk penghentian rantai disebut...", pilihan: ["Sanger Sequencing", "Next-Generation Sequencing (NGS)", "Shotgun sequencing", "Metagenomic screening"], kunci_jawaban: "Sanger Sequencing" },
+    { kategori: "Reproduksi & Genetika", tipe: "pg", pertanyaan: "Tahapan utama dalam satu siklus reaksi PCR (Polymerase Chain Reaction) secara berurutan adalah...", pilihan: ["Annealing -> Denaturing -> Extension", "Denaturing -> Annealing -> Extension", "Extension -> Denaturing -> Annealing", "Denaturing -> Extension -> Annealing"], kunci_jawaban: "Denaturing -> Annealing -> Extension" },
+    { kategori: "Reproduksi & Genetika", tipe: "bs", pertanyaan: "Ginogenesis adalah bentuk reproduksi aseksual di mana kehadiran sperma diperlukan di sekitar sel telur untuk memicu perkembangan embrio, namun materi genetik sperma tidak ikut bergabung.", kunci_jawaban: "Benar" },
+    { kategori: "Reproduksi & Genetika", tipe: "bs", pertanyaan: "Individu dengan susunan genetik heterozigot selalu menunjukkan fenotipe yang identik persis dengan induk homozigot dominannya dalam setiap jenis pola pewarisan sifat.", kunci_jawaban: "Salah" },
+    { kategori: "Reproduksi & Genetika", tipe: "essay", pertanyaan: "Jelaskan perbedaan mendasar antara reproduksi seksual dan aseksual pada hewan beserta keuntungan dan kerugian utama dari reproduksi aseksual!", kunci_jawaban: "Reproduksi seksual melibatkan fusi gamet (sel kelamin jantan dan betina) yang menghasilkan variasi genetik, sedangkan reproduksi aseksual tidak melibatkan fertilisasi gamet sehingga keturunan yang dihasilkan identik secara genetik. Keuntungan reproduksi aseksual adalah individu cepat terbentuk dan seragam, sedangkan kerugiannya adalah tidak terdapat variabilitas genetik sehingga kapasitas adaptasi terhadap perubahan lingkungan menjadi rendah." },
+    { kategori: "Reproduksi & Genetika", tipe: "essay", pertanyaan: "Uraikan tiga tahap utama yang terjadi dalam setiap siklus reaksi berantai polimerase (PCR) beserta kisaran suhu operasionalnya!", kunci_jawaban: "Tiga tahap utama PCR adalah: (1) Denaturasi pada suhu sekitar 94-98°C untuk memisahkan untai ganda DNA; (2) Annealing (penempelan) pada suhu sekitar 50-65°C agar primer menempel pada target DNA; dan (3) Ekstensi (elongasi) pada suhu sekitar 72°C di mana enzim Taq polymerase membentuk untai DNA baru." },
+    { kategori: "Reproduksi & Genetika", tipe: "essay", pertanyaan: "Jelaskan perbedaan antara fenotipe dan genotipe serta berikan contoh aplikasinya pada persilangan hukum Mendel!", kunci_jawaban: "Genotipe adalah susunan atau komposisi alel genetik yang dimiliki oleh suatu organisme (misalnya PP, Pp, atau pp), sedangkan fenotipe adalah sifat fisik atau karakteristik yang tampak dan terekspresi pada organisme tersebut (misalnya bunga warna ungu atau putih). Pada persilangan tanaman ercis Mendel, genotipe Pp menghasilkan fenotipe bunga ungu karena alel ungu bersifat dominan terhadap putih." },
+
+    // --- TOPIK: KEANEKARAGAMAN HAYATI ---
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Tingkatan keanekaragaman hayati yang mencakup variasi materi genetik di dalam suatu spesies atau populasi disebut...", pilihan: ["Keanekaragaman ekosistem", "Keanekaragaman spesies", "Keanekaragaman genetik", "Keanekaragaman fungsional"], kunci_jawaban: "Keanekaragaman genetik" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Komponen utama dalam keanekaragaman spesies yang menyatakan kelimpahan relatif atau tingkat distribusi jumlah individu antarspesies disebut...", pilihan: ["Kekayaan spesies (species richness)", "Kemerataan spesies (species evenness)", "Spesies dominan", "Indeks endemisitas"], kunci_jawaban: "Kemerataan spesies (species evenness)" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Hilangnya variasi genetik yang terjadi ketika suatu populasi baru terbentuk dari sejumlah kecil individu dari populasi besar dikenal sebagai...", pilihan: ["Founder effect", "Bottleneck effect", "Gene flow", "Competitive exclusion"], kunci_jawaban: "Founder effect" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Faktor fisik pembatas utama yang menentukan kisaran toleransi, kelimpahan, dan distribusi organisme di dalam ekosistem perairan adalah...", pilihan: ["Kandungan oksigen terlarut, cahaya matahari, dan salinitas", "Tekanan angin atmosfer atas", "Jumlah batuan sedimen vulkanik darat", "Kecepatan rotasi bumi"], kunci_jawaban: "Kandungan oksigen terlarut, cahaya matahari, dan salinitas" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Zona vegetasi mangrove di area paling depan yang langsung berhadapan dengan hempasan pasang surut air laut (mudflat area) umumnya didominasi oleh genus tumbuhan...", pilihan: ["Bruguiera dan Xylocarpus", "Avicennia dan Sonneratia", "Rhizophora apiculata", "Intsia dan Heritiera"], kunci_jawaban: "Avicennia dan Sonneratia" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Ciri khas utama dari ekosistem hutan rawa gambut (peat swamp forest) meliputi...", pilihan: ["Substrat kaya unsur hara mineral dengan pH basa (>8)", "Endapan serasah padat dengan tingkat keasaman (pH) air sangat rendah di bawah 4", "Didominasi oleh pohon kaktus dan rumput stepa kering", "Tanah berpasir kuarsa tanpa genangan air sama sekali"], kunci_jawaban: "Endapan serasah padat dengan tingkat keasaman (pH) air sangat rendah di bawah 4" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Kelompok pohon berkayu yang mendominasi hutan dataran rendah di wilayah Sumatra dan Kalimantan dari famili tertentu dikenal sebagai...", pilihan: ["Dipterocarpaceae", "Palmae", "Fagaceae", "Myrtaceae"], kunci_jawaban: "Dipterocarpaceae" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Garis biogeografi khayal yang memisahkan wilayah persebaran fauna tipe Asia dengan fauna peralihan di Indonesia adalah...", pilihan: ["Garis Wallace", "Garis Weber", "Garis Lydekker", "Garis Contiguous"], kunci_jawaban: "Garis Wallace" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Proses utama yang dinamis dan berkesinambungan yang terjadi di dalam suatu ekosistem mencakup...", pilihan: ["Aliran energi dan pendauran materi", "Penyusutan lapisan ozon dan tektonik lempeng", "Konversi garam mineral menjadi minyak bumi", "Statisnya populasi makhluk hidup"], kunci_jawaban: "Aliran energi dan pendauran materi" },
+    { kategori: "Keanekaragaman Hayati", tipe: "pg", pertanyaan: "Adaptasi struktural khas yang sering dijumpai pada tumbuhan di hutan hujan dataran rendah tropis untuk menopang batang pohon yang besar di tanah yang tipis adalah...", pilihan: ["Akar gantung udara", "Akar papan (buttress roots)", "Pneumatofor vertikal", "Akar duri haustorium"], kunci_jawaban: "Akar papan (buttress roots)" },
+    { kategori: "Keanekaragaman Hayati", tipe: "bs", pertanyaan: "Populasi organisme yang besar dan memiliki keragaman genetik tinggi umumnya memiliki kapasitas adaptasi dan ketahanan (resilience) yang lebih baik terhadap perubahan lingkungan.", kunci_jawaban: "Benar" },
+    { kategori: "Keanekaragaman Hayati", tipe: "bs", pertanyaan: "Ekosistem hutan mangrove di Indonesia paling banyak ditemukan tersebar secara merata di pulau Jawa dibandingkan dengan wilayah Papua, Sumatra, dan Kalimantan.", kunci_jawaban: "Salah" },
+    { kategori: "Keanekaragaman Hayati", tipe: "essay", pertanyaan: "Jelaskan definisi keanekaragaman hayati dan sebutkan empat tingkatan utama keanekaragaman hayati yang membentuk sistem kehidupan di bumi!", kunci_jawaban: "Keanekaragaman hayati adalah kekayaan berbagai spesies bumi, variasi genetik, serta keragaman ekosistem dan proses ekologinya. Empat tingkatan utamanya meliputi: (1) Keanekaragaman genetik; (2) Keanekaragaman spesies; (3) Keanekaragaman ekosistem; dan (4) Keanekaragaman fungsional." },
+    { kategori: "Keanekaragaman Hayati", tipe: "essay", pertanyaan: "Uraikan peran penting dari proses evolusi seperti mutasi, seleksi alam, dan isolasi geografis dalam membentuk keanekaragaman hayati!", kunci_jawaban: "Mutasi menghasilkan perubahan genetik baru sebagai sumber variasi. Seleksi alam menyaring individu yang paling cocok dengan lingkungan untuk bertahan hidup dan berkembang biak. Sementara itu, isolasi geografis memisahkan populasi dalam waktu lama sehingga masing-masing populasi beradaptasi secara mandiri dan dapat membentuk spesies baru." },
+    { kategori: "Keanekaragaman Hayati", tipe: "essay", pertanyaan: "Sebutkan dan jelaskan karakteristik utama dari tiga tipe ekosistem hutan atau vegetasi yang dapat ditemui di wilayah pesisir dan daratan Indonesia!", kunci_jawaban: "Tiga tipe ekosistem meliputi: (1) Hutan Mangrove, yaitu vegetasi di kawasan pasang surut berlumpur dengan tumbuhan berakar napas seperti Avicennia dan Rhizophora; (2) Hutan Rawa Gambut, yaitu kawasan berair dengan endapan gambut tebal dan tingkat keasaman (pH) rendah di bawah 4; serta (3) Hutan Hujan Dataran Rendah Tropis, yaitu hutan dengan kekayaan jenis pohon yang sangat tinggi, berkanopi rapat, dan memiliki ciri khas struktur akar papan." }
+];
+
+let soalAktif = [], indeksSoal = 0, jawabanUser = [];
+
+function initMenu() {
+    const container = document.getElementById('menu-container');
+    container.innerHTML = ''; 
+    const kategoriUnik = [...new Set(databaseSoal.map(s => s.kategori))];
+    kategoriUnik.forEach(k => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-outline';
+        btn.innerText = k;
+        btn.onclick = () => startQuiz(k);
+        container.appendChild(btn);
+    });
+}
+
+function startQuiz(k) {
+    soalAktif = k === 'Semua Topik' ? [...databaseSoal].sort(() => Math.random() - 0.5) : databaseSoal.filter(s => s.kategori === k);
+    indeksSoal = 0; 
+    jawabanUser = new Array(soalAktif.length).fill(""); 
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'none'; 
+    document.getElementById('quiz-screen').style.display = 'block';
+    document.getElementById('current-category-text').innerText = k;
+    renderSoal();
+}
+
+function renderSoal() {
+    const s = soalAktif[indeksSoal];
+    document.getElementById('question-counter').innerText = `Soal ${indeksSoal + 1} / ${soalAktif.length}`;
+    document.getElementById('progress-bar').style.width = `${((indeksSoal + 1) / soalAktif.length) * 100}%`;
+    document.getElementById('question-text').innerText = s.pertanyaan;
+    
+    const container = document.getElementById('answer-container');
+    container.innerHTML = '';
+
+    if (s.tipe === 'pg') {
+        const div = document.createElement('div');
+        div.className = 'options-list';
+        s.pilihan.forEach(o => {
+            const lbl = document.createElement('label'); 
+            lbl.className = 'option-item' + (jawabanUser[indeksSoal] === o ? ' selected' : '');
+            lbl.innerHTML = `<input type="radio" name="opt" ${jawabanUser[indeksSoal] === o ? 'checked' : ''}> ${o}`;
+            lbl.onclick = () => {
+                jawabanUser[indeksSoal] = o;
+                renderSoal(); 
+            };
+            div.appendChild(lbl);
+        });
+        container.appendChild(div);
+    } else if (s.tipe === 'bs') {
+        const div = document.createElement('div');
+        div.className = 'options-list';
+        const pilihanBS = ["Benar", "Salah"];
+        pilihanBS.forEach(o => {
+            const lbl = document.createElement('label'); 
+            lbl.className = 'option-item' + (jawabanUser[indeksSoal] === o ? ' selected' : '');
+            lbl.innerHTML = `<input type="radio" name="opt" ${jawabanUser[indeksSoal] === o ? 'checked' : ''}> ${o}`;
+            lbl.onclick = () => {
+                jawabanUser[indeksSoal] = o;
+                renderSoal(); 
+            };
+            div.appendChild(lbl);
+        });
+        container.appendChild(div);
+    } else {
+        const txt = document.createElement('textarea');
+        txt.className = 'essay-area';
+        txt.placeholder = 'Tuliskan jawaban Anda di sini...';
+        txt.value = jawabanUser[indeksSoal];
+        txt.oninput = (e) => { jawabanUser[indeksSoal] = e.target.value; };
+        container.appendChild(txt);
+    }
+
+    document.getElementById('btn-prev').style.display = indeksSoal === 0 ? 'none' : 'block';
+    document.getElementById('btn-next').style.display = indeksSoal === soalAktif.length - 1 ? 'none' : 'block';
+}
+
+function nextQuestion() { if (indeksSoal < soalAktif.length - 1) { indeksSoal++; renderSoal(); } }
+function prevQuestion() { if (indeksSoal > 0) { indeksSoal--; renderSoal(); } }
+
+function showResults() {
+    const belum = jawabanUser.filter(j => j === "").length;
+    if (belum > 0) {
+        if (!confirm(`Masih ada ${belum} soal belum diisi. Tetap ingin mengakhiri dan lihat hasil?`)) return;
+    }
+
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    let skor = 0;
+    let objektifTotal = 0;
+    const rev = document.getElementById('review-container'); rev.innerHTML = '';
+    
+    soalAktif.forEach((s, i) => {
+        const u = jawabanUser[i];
+        const card = document.createElement('div'); card.className = 'review-card';
+        
+        if(s.tipe === 'pg' || s.tipe === 'bs') {
+            objektifTotal++;
+            let isWrong = u !== s.kunci_jawaban;
+            if (isWrong) card.classList.add('wrong-pg');
+            if (!isWrong && u !== "") skor++;
+            
+            card.innerHTML = `
+                <div>
+                    <span class="review-badge">${s.tipe.toUpperCase()}</span>
+                    <span style="font-weight:bold">${i+1}. ${s.pertanyaan}</span>
+                </div>
+                <div class="ans-user">${u === "" ? "Tidak diisi" : u} ${u === "" ? "" : (isWrong ? '<span style="color:red; font-weight:bold"> (Salah)</span>' : '<span style="color:green; font-weight:bold"> (Benar)</span>')}</div>
+                <div style="font-size:12px; color:#666; margin-top:10px">Jawaban Kunci:</div>
+                <div class="ans-ref">${s.kunci_jawaban}</div>
+            `;
+        } else {
+            card.innerHTML = `
+                <div>
+                    <span class="review-badge">ESSAY</span>
+                    <span style="font-weight:bold">${i+1}. ${s.pertanyaan}</span>
+                </div>
+                <div style="font-size:12px; color:#666; margin-top:15px;">Jawaban Anda:</div>
+                <div class="ans-user" style="white-space: pre-wrap;">${u === "" ? "Tidak diisi" : u}</div>
+                <div style="font-size:12px; color:#666; margin-top:10px">Referensi Jawaban Kunci:</div>
+                <div class="ans-ref">${s.kunci_jawaban}</div>
+            `;
+        }
+        rev.appendChild(card);
+    });
+    
+    document.getElementById('score-category-name').innerText = document.getElementById('current-category-text').innerText;
+    document.getElementById('score-text-total').innerText = `${skor} / ${objektifTotal}`;
+    window.scrollTo(0,0);
+}
+
+initMenu();
+</script>
+</body>
+</html>
